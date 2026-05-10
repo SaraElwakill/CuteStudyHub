@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayosh's 7-Day IGCSE Challenge 📅🎀</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+
+        /* Magical Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-5deg); }
+            75% { transform: translateX(5px) rotate(5deg); }
+        }
+
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+
+        /* Custom Button Hover */
+        .quiz-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .quiz-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 10px 15px -3px rgba(244, 114, 182, 0.3);
+        }
+        
+        .day-card { transition: all 0.3s; }
+        .day-card.unlocked:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px -5px rgba(236, 72, 153, 0.3);
+        }
+        .day-card.locked {
+            filter: grayscale(100%);
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: #f3f4f6; /* gray-100 */
+        }
+
+        /* Drag and Drop Custom Styles */
+        .word-bank-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .word-bank-item.selected {
+            background-color: #fbcfe8; /* pink-200 */
+            border-color: #ec4899; /* pink-500 */
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+        }
+        .drop-slot {
+            transition: all 0.2s;
+            min-height: 3rem;
+        }
+        .drop-slot.active-target {
+            background-color: #fdf2f8; /* pink-50 */
+            border-color: #f472b6; /* pink-400 */
+            border-style: dashed;
+        }
+        
+        /* Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #fce7f3; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-100 via-purple-50 to-pink-100 min-h-screen text-purple-900 flex items-center justify-center p-4 selection:bg-pink-300 selection:text-white">
+
+    <!-- Game Container -->
+    <div id="app-container" class="max-w-2xl w-full bg-white/90 backdrop-blur-sm rounded-[2.5rem] shadow-2xl border-4 border-pink-200 overflow-hidden relative min-h-[600px] flex flex-col">
+        <!-- Top decorative bar -->
+        <div class="h-4 bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 w-full shrink-0"></div>
+
+        <!-- Dynamic Content Root -->
+        <div id="root" class="flex-grow p-6 md:p-8 flex flex-col justify-center"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. GOOGLE SHEETS API CONFIGURATION
+        // ==========================================
+        // Paste your Google Apps Script Web App URL inside these quotes!
+        const GOOGLE_API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+
+        // ==========================================
+        // 2. IGCSE MEGA CURRICULUM DATABASE
+        // ==========================================
+        const challengeData = [
+            {
+                day: 1, title: "Atomic Structure (Ch 4)", icon: "orbit", color: "pink",
+                questions: [
+                    { type: 'mcq', q: "In Rutherford's Gold Foil experiment, why did a few alpha particles bounce straight back?", opts: [{t:"They hit electrons", c:false}, {t:"They passed very close to a dense, positive nucleus! 🎯", c:true}, {t:"They hit empty space", c:false}], exp: "The atom is mostly empty space, but the tiny nucleus is extremely dense and positively charged, repelling the alpha particles!" },
+                    { type: 'mcq', q: "What is the charge of a Neutron?", opts: [{t:"Positive (+)", c:false}, {t:"Negative (-)", c:false}, {t:"Neutral (0) ⚪", c:true}], exp: "Protons are Positive, Electrons are Negative, Neutrons are Neutral!" },
+                    { type: 'mcq', q: "What force holds the individual atoms together?", opts: [{t:"Gravity", c:false}, {t:"Magnetic Force", c:false}, {t:"Electrostatic Attraction ⚡", c:true}], exp: "It's the attraction between the positively charged nucleus and the negatively charged electrons!" },
+                    { type: 'mcq', q: "True or False: In Paper Chromatography, substances separate because they have different attractions to the solvent and the paper.", opts: [{t:"True ✅", c:true}, {t:"False ❌", c:false}], exp: "True! Highly soluble dyes travel further up the paper because they are highly attracted to the solvent." },
+                    { type: 'mcq', q: "What was J.J. Thomson's model of the atom called?", opts: [{t:"The Solar System Model", c:false}, {t:"The Plum Pudding Model 🍮", c:true}, {t:"The Nuclear Model", c:false}], exp: "He pictured electrons embedded in a cloud of positive charge, like plums in a pudding!" },
+                    { type: 'dnd', q: "Tap a word, then tap a box to match the Atomic concepts! 👆", 
+                      pairs: [
+                          {term: "Nucleus", def: "The tiny central part of an atom containing protons and neutrons."},
+                          {term: "Chromatogram", def: "The pattern of separated spots produced during chromatography."},
+                          {term: "Analogy", def: "A model that compares something unfamiliar to something familiar."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 2, title: "Solutions & Mixtures (Ch 5 & 6.2)", icon: "beaker", color: "purple",
+                questions: [
+                    { type: 'mcq', q: "What is a 'solute'?", opts: [{t:"A liquid that dissolves things", c:false}, {t:"A substance that dissolves in a solvent (like salt) 🧂", c:true}, {t:"The mixture of both", c:false}], exp: "Solute (salt) + Solvent (water) = Solution!" },
+                    { type: 'mcq', q: "How does temperature affect the solubility of most solids?", opts: [{t:"Solubility decreases", c:false}, {t:"Temperature has no effect", c:false}, {t:"Solubility increases with temperature 🔥", c:true}], exp: "Hotter solvent particles have more energy, bumping into the solute with more force to break it apart faster!" },
+                    { type: 'mcq', q: "A pure substance contains...", opts: [{t:"Only one type of element or compound 💎", c:true}, {t:"Many different types of particles", c:false}, {t:"Only dissolved liquids", c:false}], exp: "Pure substances (like pure gold or pure water) contain only one type of particle. Mixtures contain many." },
+                    { type: 'mcq', q: "True or False: A dilute solution has a LARGE number of solute particles in a small volume of solvent.", opts: [{t:"True ✅", c:false}, {t:"False ❌", c:true}], exp: "False! A dilute solution has a SMALL number of solute particles in a large amount of solvent." },
+                    { type: 'mcq', q: "What do we call a solution when no more solute will dissolve in it?", opts: [{t:"A saturated solution 🛑", c:true}, {t:"A super solution", c:false}, {t:"A pure solution", c:false}], exp: "It has reached its saturation point!" },
+                    { type: 'dnd', q: "Match the Chemistry terms! 👆", 
+                      pairs: [
+                          {term: "Alloy", def: "A mixture of a pure metal with other elements."},
+                          {term: "Solvent", def: "A liquid (like water) that dissolves a substance."},
+                          {term: "Insoluble", def: "A substance that will not dissolve (like chalk)."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 3, title: "Reactions & Reactivity (Ch 6)", icon: "flame", color: "rose",
+                questions: [
+                    { type: 'mcq', q: "What is an Exothermic process?", opts: [{t:"Transfers energy OUT to the surroundings (heats up)! 🔥", c:true}, {t:"Takes energy IN from surroundings (gets cold)", c:false}], exp: "Exo = Out! Examples include combustion (burning) and neutralisation." },
+                    { type: 'mcq', q: "In the reactivity series, which of these metals is the LEAST reactive?", opts: [{t:"Potassium", c:false}, {t:"Zinc", c:false}, {t:"Gold 👑", c:true}], exp: "Gold is very unreactive (inert), which is why it stays shiny forever!" },
+                    { type: 'mcq', q: "When a metal reacts with a dilute acid, what are the two products?", opts: [{t:"Metal Oxide + Water", c:false}, {t:"Salt + Hydrogen gas 🫧", c:true}, {t:"Salt + Carbon Dioxide", c:false}], exp: "Metal + Acid -> Salt + Hydrogen. (You can test for the hydrogen with a lit splint to hear a 'pop'!)" },
+                    { type: 'mcq', q: "True or False: Photosynthesis in plants is an endothermic reaction.", opts: [{t:"True ✅", c:true}, {t:"False ❌", c:false}], exp: "True! Plants take IN energy from sunlight to make it happen." },
+                    { type: 'mcq', q: "The thermit reaction (joining railway tracks) produces molten iron. This reaction is highly...", opts: [{t:"Exothermic 🌋", c:true}, {t:"Endothermic", c:false}], exp: "It releases a massive amount of heat, enough to melt the iron product!" },
+                    { type: 'dnd', q: "Match the Reaction concepts! 👆", 
+                      pairs: [
+                          {term: "Precipitate", def: "An insoluble solid that forms when soluble substances react."},
+                          {term: "Endothermic", def: "A process that transfers energy FROM the surroundings (feels cold)."},
+                          {term: "Reactant", def: "A substance that changes in a chemical reaction to form products."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 4, title: "Respiration & Blood (Bio Ch 1)", icon: "heart-pulse", color: "fuchsia",
+                questions: [
+                    { type: 'mcq', q: "Why do Red Blood Cells not have a nucleus?", opts: [{t:"To make them invisible", c:false}, {t:"To leave more room for haemoglobin to carry oxygen! 🩸", c:true}, {t:"Because they forgot to grow one", c:false}], exp: "No nucleus means extra space for haemoglobin, maximizing oxygen transport." },
+                    { type: 'mcq', q: "What is the main function of White Blood Cells?", opts: [{t:"To carry carbon dioxide", c:false}, {t:"To digest food", c:false}, {t:"To protect the body by destroying pathogens! 🛡️", c:true}], exp: "They wrap around microorganisms and destroy them to fight infections." },
+                    { type: 'mcq', q: "What is the correct word equation for Aerobic Respiration?", opts: [{t:"Glucose + Oxygen ➔ Carbon Dioxide + Water ✨", c:true}, {t:"Carbon Dioxide + Water ➔ Glucose + Oxygen", c:false}], exp: "It happens in the mitochondria to release energy for your cells!" },
+                    { type: 'mcq', q: "Why do muscles work in 'antagonistic pairs'?", opts: [{t:"Because muscles can only PULL (not push) bones ↔️", c:true}, {t:"Because they like to fight", c:false}, {t:"To make bones heavier", c:false}], exp: "One pulls the bone one way, and the partner pulls it the opposite way (like biceps & triceps)." },
+                    { type: 'mcq', q: "Which blood vessels have walls only ONE cell thick for fast diffusion?", opts: [{t:"Arteries", c:false}, {t:"Veins", c:false}, {t:"Capillaries 🕸️", c:true}], exp: "Capillaries are super thin so oxygen and nutrients can easily diffuse into tissues." },
+                    { type: 'dnd', q: "Match the Respiratory terms! 👆", 
+                      pairs: [
+                          {term: "Plasma", def: "The pale-yellow liquid part of the blood that carries nutrients."},
+                          {term: "Alveoli", def: "Tiny air pockets in the lungs where gas exchange happens."},
+                          {term: "Cilia", def: "Waving cell strands that sweep sticky mucus up from the lungs."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 5, title: "Nutrition & Lifestyle (Bio Ch 2)", icon: "apple", color: "orange",
+                questions: [
+                    { type: 'mcq', q: "Which nutrient is essential for building new cells (Growth and Repair)?", opts: [{t:"Fats", c:false}, {t:"Proteins 🍗", c:true}, {t:"Carbohydrates", c:false}], exp: "Proteins build and repair tissues (athletes need a lot of it!)." },
+                    { type: 'mcq', q: "What is the function of Fibre in the diet?", opts: [{t:"To give us instant energy", c:false}, {t:"To build bones", c:false}, {t:"To keep the intestines healthy and prevent constipation 🌾", c:true}], exp: "Fibre isn't digested, but it forms solid waste and cleans out your gut." },
+                    { type: 'mcq', q: "Eating too many carbs and fats without exercising leads to obesity and...", opts: [{t:"Catching colds", c:false}, {t:"Type 2 Diabetes 📉", c:true}, {t:"Iron deficiency", c:false}], exp: "Excess energy is stored as fat, causing severe health and blood sugar issues." },
+                    { type: 'mcq', q: "What does the black, sticky Tar in tobacco smoke do?", opts: [{t:"Paralyses lung cilia and causes cancer 🛑", c:true}, {t:"Makes teeth whiter", c:false}, {t:"Helps breathe deeper", c:false}], exp: "Tar is highly toxic, stopping the lungs from cleaning themselves and causing tumours." },
+                    { type: 'mcq', q: "Which vitamin is needed to keep skin and gums healthy?", opts: [{t:"Vitamin D", c:false}, {t:"Vitamin C 🍋", c:true}, {t:"Vitamin A", c:false}], exp: "Vitamin C is found in citrus fruits like lemons and oranges." },
+                    { type: 'dnd', q: "Match the Nutrition concepts! 👆", 
+                      pairs: [
+                          {term: "Balanced Diet", def: "Eating the correct amounts of nutrients from a wide variety of foods."},
+                          {term: "Nicotine", def: "The highly addictive drug found in tobacco smoke."},
+                          {term: "Calcium", def: "A mineral used to make bones and teeth strong."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 6, title: "Ecosystems (Bio Ch 3)", icon: "leaf", color: "emerald",
+                questions: [
+                    { type: 'mcq', q: "What is the definition of an Ecosystem?", opts: [{t:"Just the animals in an area", c:false}, {t:"All the organisms PLUS the physical factors (light, water) in an area 🌍", c:true}, {t:"The weather in a forest", c:false}], exp: "An ecosystem includes the living (organisms) AND the non-living (environment) parts." },
+                    { type: 'mcq', q: "What do the arrows in a Food Chain show?", opts: [{t:"Who is faster", c:false}, {t:"Which way the wind blows", c:false}, {t:"The flow of energy from one organism to another ⚡", c:true}], exp: "The arrows point from the eaten to the 'eater', showing where the energy goes." },
+                    { type: 'mcq', q: "What is an 'Invasive Species'?", opts: [{t:"A native plant", c:false}, {t:"A non-native species that causes damage to an ecosystem 🚨", c:true}, {t:"An animal that sleeps a lot", c:false}], exp: "They grow out of control because they often have no predators in the new area!" },
+                    { type: 'mcq', q: "Which tool would a scientist use to catch small crawling insects on the ground?", opts: [{t:"A Quadrat", c:false}, {t:"A Pitfall Trap 🪲", c:true}, {t:"A Pooter", c:false}], exp: "A pitfall trap is a jar buried in the ground that bugs fall into." },
+                    { type: 'mcq', q: "True or False: Energy is LOST at each step of a food chain.", opts: [{t:"True ✅", c:true}, {t:"False ❌", c:false}], exp: "True! Animals use energy to move and keep warm, and lose energy in waste (faeces)." },
+                    { type: 'dnd', q: "Match the Ecosystem terms! 👆", 
+                      pairs: [
+                          {term: "Habitat", def: "The specific place where an organism naturally lives."},
+                          {term: "Bioaccumulation", def: "The dangerous build-up of poisons (like mercury) inside an organism."},
+                          {term: "Producer", def: "An organism (like a plant) that makes its own food."}
+                      ]
+                    }
+                ]
+            },
+            {
+                day: 7, title: "Earth & Climate (Bio Ch 11)", icon: "cloud-sun", color: "sky",
+                questions: [
+                    { type: 'mcq', q: "What is the exact difference between Weather and Climate?", opts: [{t:"Weather is local & short-term, Climate is large area & long-term 🌤️", c:true}, {t:"Weather is hot, Climate is cold", c:false}, {t:"They are the same", c:false}], exp: "Climate is the average pattern over hundreds or thousands of years!" },
+                    { type: 'mcq', q: "What do scientists believe causes the natural Ice Age cycle?", opts: [{t:"Volcanoes", c:false}, {t:"Small changes in the Earth's orbit around the Sun ☀️", c:true}, {t:"Too many clouds", c:false}], exp: "Tiny shifts in our orbit change how much of the Sun's energy reaches the Earth." },
+                    { type: 'mcq', q: "Why is Carbon Dioxide called a 'Greenhouse Gas'?", opts: [{t:"It reflects energy back to the surface, causing warming! 🌡️", c:true}, {t:"It turns the sky green", c:false}, {t:"Plants breathe it out", c:false}], exp: "Greenhouse gases act like a warm blanket over the Earth, trapping heat." },
+                    { type: 'mcq', q: "What gas makes up 78% of the Earth's atmosphere?", opts: [{t:"Oxygen", c:false}, {t:"Carbon Dioxide", c:false}, {t:"Nitrogen 🎈", c:true}], exp: "The atmosphere is 78% Nitrogen, 21% Oxygen, and only 0.03% Carbon dioxide." },
+                    { type: 'mcq', q: "What amazing evidence hides inside 'Ice Cores'?", opts: [{t:"Frozen dinosaurs", c:false}, {t:"Trapped bubbles of ancient gas showing past atmospheres 🫧", c:true}, {t:"Diamonds", c:false}], exp: "Scientists analyze these bubbles to measure ancient CO2 levels and temperatures." },
+                    { type: 'dnd', q: "Match the Climate terms! 👆", 
+                      pairs: [
+                          {term: "Glacial Period", def: "A freezing time when ice sheets spread and the Earth cools."},
+                          {term: "Interglacial Period", def: "A warmer period between Ice Ages (like the one we are in now!)."},
+                          {term: "Extinction", def: "When a species dies out completely."}
+                      ]
+                    }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // 3. GAME STATE & DATE LOGIC
+        // ==========================================
+        
+        // Find or set the "Start Date" in LocalStorage
+        let storedStartDate = localStorage.getItem('ayosh_challenge_start');
+        if (!storedStartDate) {
+            // First time opening the app! Set today as Day 1.
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            storedStartDate = today.toISOString();
+            localStorage.setItem('ayosh_challenge_start', storedStartDate);
+        }
+        const baseStartDate = new Date(storedStartDate);
+        
+        let currentDayIndex = null;
+        let currentQuestionIndex = 0;
+        let dayScore = 0;
+        let dayAnswers = [];
+        
+        // Drag & Drop State
+        let dndState = { bank: [], slots: [], selectedWord: null };
+
+        let audioCtx = null;
+        const root = document.getElementById('root');
+
+        // --- AUDIO ---
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+                osc.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.2); 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'incorrect') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // --- HELPER: GET DATES ---
+        function getDayDate(dayNum) {
+            let d = new Date(baseStartDate);
+            d.setDate(d.getDate() + (dayNum - 1));
+            return d;
+        }
+
+        function isUnlocked(dayNum) {
+            let today = new Date();
+            let unlockDate = getDayDate(dayNum);
+            return today.getTime() >= unlockDate.getTime();
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        // ==========================================
+        // 4. API CALL TO GOOGLE SHEETS
+        // ==========================================
+        function saveProgressToSheet(day, score, total) {
+            if(GOOGLE_API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL") {
+                console.warn("⚠️ API URL not set. Scores are not being saved to Google Sheets.");
+                return;
+            }
+
+            const payload = {
+                user: "Ayosh", 
+                day: day,
+                score: score,
+                total: total
+            };
+
+            fetch(GOOGLE_API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Solves CORS issues on static pages
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log(`Saved Day ${day} score to Google Sheets!`);
+            }).catch(err => console.error("Error saving to sheet:", err));
+        }
+
+        // ==========================================
+        // 5. VIEW MANAGEMENT
+        // ==========================================
+        function renderPanel() {
+            let gridHtml = challengeData.map((data) => {
+                let unlocked = isUnlocked(data.day);
+                let dateStr = formatDate(getDayDate(data.day));
+                
+                if (unlocked) {
+                    return `
+                        <div onclick="startDay(${data.day - 1})" class="day-card unlocked cursor-pointer bg-white border-4 border-${data.color}-300 p-4 rounded-2xl flex flex-col items-center gap-2 relative overflow-hidden group">
+                            <div class="absolute -right-4 -top-4 opacity-10 group-hover:scale-150 transition-transform"><i data-lucide="${data.icon}" class="w-16 h-16 text-${data.color}-500"></i></div>
+                            <div class="w-12 h-12 bg-${data.color}-100 rounded-full flex items-center justify-center z-10"><i data-lucide="${data.icon}" class="w-6 h-6 text-${data.color}-500"></i></div>
+                            <h3 class="font-black text-purple-800 z-10 text-center leading-tight">Day ${data.day}<br><span class="text-xs font-bold opacity-80">${data.title.split(' ')[0]}</span></h3>
+                            <p class="text-xs font-bold text-${data.color}-500 bg-${data.color}-50 px-2 py-1 rounded-full z-10">${dateStr}</p>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="day-card locked bg-gray-100 border-4 border-gray-300 p-4 rounded-2xl flex flex-col items-center gap-2" onclick="playShake(this)">
+                            <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center"><i data-lucide="lock" class="w-6 h-6 text-gray-500"></i></div>
+                            <h3 class="font-black text-gray-500">Day ${data.day}</h3>
+                            <p class="text-xs font-bold text-gray-500 bg-gray-300 px-2 py-1 rounded-full text-center">Unlocks<br>${dateStr}</p>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            root.innerHTML = `
+                <div class="text-center space-y-4 animate-pop-in flex flex-col h-full">
+                    <div class="shrink-0 space-y-2">
+                        <div class="w-16 h-16 mx-auto bg-pink-100 rounded-full flex items-center justify-center shadow-sm">
+                            <i data-lucide="calendar-heart" class="w-8 h-8 text-pink-500"></i>
+                        </div>
+                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
+                            7-Day Mega Challenge 📅🎀
+                        </h1>
+                        <p class="text-purple-600 font-bold px-4">Master Biology, Chemistry & Physics! A new test unlocks every 24 hours.</p>
+                    </div>
+                    
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 pb-4">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
+                            ${gridHtml}
+                        </div>
+                    </div>
+
+                    <div class="shrink-0 pt-4 border-t-2 border-pink-100">
+                        <a href="index.html" class="inline-flex items-center gap-2 text-purple-500 hover:text-pink-500 font-bold transition-colors bg-white px-6 py-2 rounded-full shadow-sm border border-purple-100">
+                            <i data-lucide="home" class="w-4 h-4"></i> Back to Hub
+                        </a>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.playShake = function(el) {
+            initAudio();
+            playSound('incorrect');
+            el.classList.remove('animate-shake');
+            void el.offsetWidth; // trigger reflow
+            el.classList.add('animate-shake');
+        }
+
+        window.startDay = function(index) {
+            initAudio();
+            currentDayIndex = index;
+            currentQuestionIndex = 0;
+            dayScore = 0;
+            dayAnswers = [];
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const dayData = challengeData[currentDayIndex];
+            const q = dayData.questions[currentQuestionIndex];
+            const color = dayData.color;
+
+            let progressHtml = `
+                <div class="flex justify-between items-center border-b-2 border-${color}-100 pb-4 shrink-0">
+                    <div class="flex items-center gap-2 font-bold text-${color}-600">
+                        <i data-lucide="${dayData.icon}" class="w-5 h-5"></i> Day ${dayData.day}: ${dayData.title}
+                    </div>
+                    <span class="font-bold text-${color}-500 bg-${color}-100 px-3 py-1 rounded-full text-sm">
+                        Q ${currentQuestionIndex + 1} / ${dayData.questions.length}
+                    </span>
+                </div>
+            `;
+
+            if (q.type === 'mcq') {
+                renderMCQ(progressHtml, q, color);
+            } else if (q.type === 'dnd') {
+                initDnDState(q);
+                renderDnD(progressHtml, q, color);
+            }
+        }
+
+        // --- MCQ LOGIC ---
+        function renderMCQ(progressHtml, q, color) {
+            let optionsHtml = q.opts.map((opt, idx) => `
+                <button id="opt-${idx}" onclick="handleMCQ(${idx}, ${opt.c})" class="quiz-btn w-full text-left p-4 rounded-2xl border-2 border-${color}-100 bg-white font-medium text-purple-700 hover:bg-${color}-50 hover:border-${color}-300">
+                    ${opt.t}
+                </button>
+            `).join('');
+
+            root.innerHTML = `
+                <div class="space-y-6 w-full animate-pop-in flex flex-col h-full">
+                    ${progressHtml}
+                    <div class="bg-purple-50 p-5 rounded-2xl border-2 border-purple-100 shrink-0">
+                        <h2 class="text-lg md:text-xl font-bold text-purple-800">${q.q}</h2>
+                    </div>
+                    <div class="space-y-3 flex-grow overflow-y-auto custom-scrollbar" id="options-container">
+                        ${optionsHtml}
+                    </div>
+                    <div id="feedback-container" class="hidden mt-4 shrink-0"></div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.handleMCQ = function(idx, isCorrect) {
+            const q = challengeData[currentDayIndex].questions[currentQuestionIndex];
+            const feedbackContainer = document.getElementById('feedback-container');
+            const clickedBtn = document.getElementById(`opt-${idx}`);
+            
+            dayAnswers.push({ q: q.q, correct: isCorrect, exp: q.exp });
+
+            document.querySelectorAll('#options-container button').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+
+            if (isCorrect) {
+                dayScore++;
+                playSound('correct');
+                clickedBtn.className = "w-full text-left p-4 rounded-2xl border-2 font-bold bg-green-100 border-green-400 text-green-800 scale-[1.02] shadow-md transition-all";
+                
+                feedbackContainer.innerHTML = `
+                    <div class="p-4 rounded-2xl border-2 bg-green-50 border-green-300 animate-pop-in">
+                        <p class="font-bold text-lg text-green-700 mb-1 flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i> Brilliant!</p>
+                        <p class="text-sm font-semibold text-green-800">${q.exp}</p>
+                    </div>
+                `;
+            } else {
+                playSound('incorrect');
+                clickedBtn.className = "w-full text-left p-4 rounded-2xl border-2 font-bold bg-red-100 border-red-400 text-red-800 scale-[0.98] transition-all";
+                const correctIdx = q.opts.findIndex(o => o.c);
+                const correctBtn = document.getElementById(`opt-${correctIdx}`);
+                correctBtn.classList.remove('opacity-50');
+                correctBtn.classList.add('bg-green-50', 'border-green-300', 'text-green-800');
+
+                feedbackContainer.innerHTML = `
+                    <div class="p-4 rounded-2xl border-2 bg-red-50 border-red-300 animate-pop-in">
+                        <p class="font-bold text-lg text-red-700 mb-1 flex items-center gap-2"><i data-lucide="x-circle" class="w-5 h-5"></i> Oopsie!</p>
+                        <p class="text-sm font-semibold text-red-800">${q.exp}</p>
+                    </div>
+                `;
+            }
+
+            feedbackContainer.classList.remove('hidden');
+            lucide.createIcons();
+            setTimeout(nextQuestion, 4000);
+        }
+
+        // --- TAP & DROP LOGIC ---
+        function initDnDState(q) {
+            let terms = q.pairs.map(p => p.term);
+            dndState.bank = terms.sort(() => Math.random() - 0.5);
+            dndState.slots = q.pairs.map(p => ({ def: p.def, filledWith: null, correctTerm: p.term }));
+            dndState.selectedWord = null;
+        }
+
+        function renderDnD(progressHtml, q, color) {
+            let bankHtml = dndState.bank.length === 0 
+                ? `<p class="text-center text-sm font-bold text-gray-400 italic py-2 w-full">All matched! Tap Check Matches! 🎀</p>`
+                : dndState.bank.map(word => `
+                    <div onclick="selectWord('${word}')" class="word-bank-item inline-block px-4 py-2 bg-white border-2 border-${color}-300 text-${color}-700 font-bold rounded-xl shadow-sm ${dndState.selectedWord === word ? 'selected' : ''}">
+                        ${word}
+                    </div>
+                  `).join('');
+
+            let slotsHtml = dndState.slots.map((slot, index) => `
+                <div class="bg-gray-50 rounded-xl p-3 border-2 border-gray-200 flex flex-col md:flex-row gap-3 items-center text-sm font-medium text-purple-800">
+                    <div class="flex-grow text-center md:text-left">${slot.def}</div>
+                    <div onclick="tapSlot(${index})" class="drop-slot w-full md:w-40 bg-white border-2 border-gray-300 rounded-xl flex items-center justify-center cursor-pointer shrink-0 ${dndState.selectedWord && !slot.filledWith ? 'active-target' : ''}">
+                        ${slot.filledWith 
+                            ? `<span class="font-bold text-${color}-600 bg-${color}-50 px-3 py-1 rounded-lg w-full text-center h-full flex items-center justify-center">${slot.filledWith}</span>` 
+                            : `<span class="text-gray-400 text-xs uppercase tracking-widest">Tap to place</span>`}
+                    </div>
+                </div>
+            `).join('');
+
+            let submitBtn = `<button onclick="checkDnD()" class="w-full py-3 mt-4 bg-gradient-to-r from-${color}-400 to-purple-400 text-white rounded-xl font-bold shadow-md transform transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2" ${dndState.bank.length > 0 ? 'disabled' : ''}>Check Matches <i data-lucide="sparkles" class="w-5 h-5"></i></button>`;
+
+            root.innerHTML = `
+                <div class="space-y-4 w-full animate-pop-in flex flex-col h-full">
+                    ${progressHtml}
+                    <div class="bg-${color}-50 p-4 rounded-2xl border-2 border-${color}-100 shrink-0 text-center">
+                        <h2 class="text-lg font-bold text-${color}-800">${q.q}</h2>
+                    </div>
+                    
+                    <div class="bg-white p-3 rounded-2xl border-2 border-${color}-200 shadow-inner min-h-[4rem] flex flex-wrap gap-2 justify-center items-center shrink-0 transition-all">
+                        ${bankHtml}
+                    </div>
+
+                    <div class="space-y-2 flex-grow overflow-y-auto custom-scrollbar">
+                        ${slotsHtml}
+                    </div>
+                    
+                    <div class="shrink-0" id="dnd-footer">
+                        ${submitBtn}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.selectWord = function(word) {
+            playSound('pop');
+            dndState.selectedWord = dndState.selectedWord === word ? null : word;
+            reRenderDnD();
+        }
+
+        window.tapSlot = function(slotIndex) {
+            let slot = dndState.slots[slotIndex];
+            
+            if (slot.filledWith) {
+                playSound('pop');
+                dndState.bank.push(slot.filledWith);
+                slot.filledWith = null;
+                dndState.selectedWord = null;
+                reRenderDnD();
+                return;
+            }
+
+            if (dndState.selectedWord && !slot.filledWith) {
+                playSound('pop');
+                slot.filledWith = dndState.selectedWord;
+                dndState.bank = dndState.bank.filter(w => w !== dndState.selectedWord);
+                dndState.selectedWord = null;
+                reRenderDnD();
+            }
+        }
+
+        function reRenderDnD() {
+            const dayData = challengeData[currentDayIndex];
+            let progressHtml = `
+                <div class="flex justify-between items-center border-b-2 border-${dayData.color}-100 pb-4 shrink-0">
+                    <div class="flex items-center gap-2 font-bold text-${dayData.color}-600">
+                        <i data-lucide="${dayData.icon}" class="w-5 h-5"></i> Day ${dayData.day}: ${dayData.title}
+                    </div>
+                    <span class="font-bold text-${dayData.color}-500 bg-${dayData.color}-100 px-3 py-1 rounded-full text-sm">
+                        Q ${currentQuestionIndex + 1} / ${dayData.questions.length}
+                    </span>
+                </div>
+            `;
+            renderDnD(progressHtml, dayData.questions[currentQuestionIndex], dayData.color);
+        }
+
+        window.checkDnD = function() {
+            let allCorrect = true;
+            dndState.slots.forEach(slot => { if (slot.filledWith !== slot.correctTerm) allCorrect = false; });
+
+            dayAnswers.push({ q: "Vocabulary Matching", correct: allCorrect, exp: allCorrect ? "Flawless matching!" : "Check the mark scheme to see the correct pairs!" });
+
+            const footer = document.getElementById('dnd-footer');
+            if (allCorrect) {
+                dayScore++;
+                playSound('correct');
+                footer.innerHTML = `<div class="p-4 rounded-xl border-2 bg-green-50 border-green-300 animate-pop-in"><p class="font-bold text-green-700 flex items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i> Perfect Matches!</p></div>`;
+            } else {
+                playSound('incorrect');
+                footer.innerHTML = `<div class="p-4 rounded-xl border-2 bg-red-50 border-red-300 animate-pop-in"><p class="font-bold text-red-700 flex items-center gap-2"><i data-lucide="x-circle" class="w-5 h-5"></i> Some matches were mixed up!</p></div>`;
+                const dropSlots = document.querySelectorAll('.drop-slot');
+                dndState.slots.forEach((slot, i) => {
+                    if(slot.filledWith !== slot.correctTerm) {
+                        dropSlots[i].classList.add('border-red-400', 'bg-red-50');
+                        dropSlots[i].querySelector('span').classList.replace(`text-${challengeData[currentDayIndex].color}-600`, 'text-red-600');
+                    } else {
+                        dropSlots[i].classList.add('border-green-400', 'bg-green-50');
+                        dropSlots[i].querySelector('span').classList.replace(`text-${challengeData[currentDayIndex].color}-600`, 'text-green-600');
+                    }
+                });
+            }
+            lucide.createIcons();
+            setTimeout(nextQuestion, 4000);
+        }
+
+        function nextQuestion() {
+            const dayData = challengeData[currentDayIndex];
+            if (currentQuestionIndex < dayData.questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                renderEndScreen();
+            }
+        }
+
+        // --- END SCREEN ---
+        function renderEndScreen() {
+            const dayData = challengeData[currentDayIndex];
+            const color = dayData.color;
+            
+            // API CALL: Save score to Google Sheets!
+            saveProgressToSheet(dayData.day, dayScore, dayData.questions.length);
+
+            let message = dayScore === dayData.questions.length 
+                ? "Flawless victory! 👑✨ Your score has been saved!" 
+                : "Great practice! Review the marks below! 🌟";
+
+            let reportHtml = dayAnswers.map((ans, i) => `
+                <div class="bg-gray-50 p-3 rounded-xl border-2 ${ans.correct ? 'border-green-200' : 'border-red-200'} mb-3">
+                    <p class="font-bold text-purple-900 text-sm mb-1 flex gap-1">
+                        <span class="${ans.correct ? 'text-green-500' : 'text-red-500'}">${ans.correct ? '✅' : '❌'}</span>
+                        Q${i + 1}: ${ans.q}
+                    </p>
+                    <p class="text-xs text-purple-700 italic bg-white p-2 rounded-lg border border-gray-100">
+                        <strong>Mark Scheme:</strong> ${ans.exp}
+                    </p>
+                </div>
+            `).join('');
+
+            root.innerHTML = `
+                <div class="flex flex-col h-full w-full animate-pop-in">
+                    <div class="text-center mb-4 shrink-0">
+                        <div class="w-16 h-16 mx-auto bg-${color}-100 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                            <i data-lucide="award" class="w-8 h-8 text-yellow-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-${color}-500 to-purple-500">
+                            Day ${dayData.day} Complete!
+                        </h3>
+                    </div>
+                    
+                    <div class="bg-${color}-50 w-full p-3 rounded-2xl border-2 border-${color}-200 text-center mb-4 shrink-0">
+                        <p class="text-sm text-${color}-800 font-bold">Score: <span class="text-2xl text-${color}-600">${dayScore}/${dayData.questions.length}</span></p>
+                        <p class="text-xs text-${color}-600 italic mt-1">${message}</p>
+                    </div>
+
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 mb-4">
+                        <h4 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-2">Detailed Mark Scheme:</h4>
+                        ${reportHtml}
+                    </div>
+
+                    <div class="shrink-0">
+                        <button onclick="renderPanel()" class="w-full py-4 bg-gradient-to-r from-${color}-400 to-purple-400 text-white rounded-2xl font-bold shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="calendar" class="w-5 h-5"></i> Back to 7-Day Panel
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Init App
+        renderPanel();
+    </script>
+</body>
+</html>
