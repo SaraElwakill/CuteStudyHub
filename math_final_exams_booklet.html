@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayosh's Math Final Exam Booklet 🌸</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Force border-box and print colors */
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background-color: #fdf2f8; /* pink-50 */
+            color: #4c1d95; /* purple-900 */
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        /* Strict A4 Paper Styling for Screen */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto 20mm auto;
+            background: white;
+            padding: 15mm 20mm;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden; 
+            border: 4px solid #fbcfe8;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Print Specific Styles */
+        @page {
+            size: A4;
+            margin: 10mm !important;
+        }
+        
+        @media print {
+            body { background-color: white !important; padding: 0; }
+            .a4-page { 
+                margin: 0; 
+                border-radius: 0; 
+                box-shadow: none; 
+                border: none;
+                page-break-after: always; 
+                page-break-inside: avoid; 
+                min-height: 297mm;
+                height: 297mm;
+            }
+            .no-print { display: none !important; }
+            .print-border { border: 2px solid #fbcfe8 !important; border-radius: 16px !important; padding: 10px !important;}
+        }
+
+        /* Writing lines */
+        .write-line {
+            border-bottom: 2px dashed #cbd5e1;
+            width: 100%;
+            display: inline-block;
+            margin-top: 30px;
+            margin-bottom: 5px;
+        }
+
+        /* Drawing Grid */
+        .drawing-grid {
+            width: 100%;
+            height: 180px;
+            border: 2px solid #cbd5e1;
+            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
+            background-size: 20px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        /* Number Line Base */
+        .number-line {
+            position: relative;
+            width: 90%;
+            margin: 40px auto 20px auto;
+            height: 2px;
+            background-color: #475569;
+        }
+        .tick {
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background-color: #475569;
+            top: -5px;
+        }
+        .tick-label {
+            position: absolute;
+            top: 12px;
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .fancy-title { font-family: 'Fredoka One', cursive; letter-spacing: 1px; }
+        .math-text { font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #be185d; }
+        
+        .animate-pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes pop-in { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Download Button -->
+    <div class="fixed top-5 right-5 z-50 no-print flex flex-col gap-2">
+        <button onclick="triggerPrint()" class="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-black py-4 px-8 rounded-full shadow-2xl transform transition hover:scale-105 flex items-center justify-center gap-3 text-lg border-4 border-white animate-pulse">
+            <i data-lucide="printer" class="w-6 h-6"></i> Save as PDF 🖨️
+        </button>
+    </div>
+
+    <!-- Print Error Modal -->
+    <div id="print-modal" class="hidden fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm no-print">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border-4 border-pink-300 animate-pop-in">
+            <div class="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="alert-circle" class="w-10 h-10 text-pink-500"></i></div>
+            <h2 class="text-2xl font-black text-purple-900 mb-2">Preview Mode Active! 🖨️</h2>
+            <p class="text-purple-700 font-bold mb-4">The automatic print button is blocked inside this preview window.</p>
+            <div class="bg-purple-50 rounded-xl p-4 mb-6 border-2 border-purple-100">
+                <p class="text-sm text-purple-800 font-bold mb-2">To save as PDF, just press:</p>
+                <p class="text-xl font-black text-pink-600">Ctrl + P <span class="text-sm font-bold text-purple-600">(Windows)</span></p>
+                <p class="text-lg font-black text-purple-400 my-1">or</p>
+                <p class="text-xl font-black text-pink-600">Cmd + P <span class="text-sm font-bold text-purple-600">(Mac)</span></p>
+            </div>
+            <button onclick="document.getElementById('print-modal').classList.add('hidden')" class="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold py-3 px-6 rounded-xl shadow-md">Got it! ✨</button>
+        </div>
+    </div>
+
+    <!-- TITLE PAGE -->
+    <div class="a4-page items-center justify-center text-center print-border bg-gradient-to-b from-white to-pink-50">
+        <div class="w-40 h-40 bg-white rounded-full flex items-center justify-center mb-6 shadow-md border-4 border-pink-300">
+            <i data-lucide="crown" class="w-20 h-20 text-pink-500"></i>
+        </div>
+        <h1 class="fancy-title text-6xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 mb-4">
+            Princess Ayosh 👑
+        </h1>
+        <h2 class="text-4xl font-bold text-purple-800 mb-2">Final Exam Booklet</h2>
+        <p class="text-2xl font-semibold text-pink-600 mb-16">Drawing, Solving & Mixed Models! 📐✏️</p>
+        
+        <div class="w-full max-w-lg space-y-10 text-left bg-white p-10 rounded-3xl border-4 border-pink-200 shadow-sm">
+            <div>
+                <label class="text-2xl font-black text-purple-800 flex items-center gap-2"><i data-lucide="pen-tool" class="text-pink-500"></i> My Name:</label>
+                <div class="write-line border-pink-300"></div>
+            </div>
+            <div>
+                <label class="text-2xl font-black text-purple-800 flex items-center gap-2"><i data-lucide="calendar" class="text-pink-500"></i> Date:</label>
+                <div class="write-line border-pink-300 mt-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 1: Equations & Number Lines -->
+    <div class="a4-page print-border">
+        <div class="bg-pink-100 p-5 rounded-2xl border-4 border-pink-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-pink-600 mb-1 flex items-center gap-2"><i data-lucide="edit-2" class="w-8 h-8"></i> Exam 1: Equations & Number Lines</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Solve the following equation: <span class="math-text bg-pink-50 px-2 py-1 rounded text-xl">2(x + 3) = 14</span></p>
+                <p class="text-sm text-gray-500 italic mt-1">Hint: Expand the brackets first!</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Draw the inequality <span class="math-text text-xl">x &ge; 2</span> on the blank number line below.</p>
+                <p class="text-sm text-gray-500 italic mt-1">Remember: Use a closed circle because it is 'greater than or equal to'.</p>
+                <div class="number-line">
+                    <div class="absolute -right-2 -top-1.5 w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[8px] border-l-slate-600"></div>
+                    <div class="absolute -left-2 -top-1.5 w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[8px] border-r-slate-600"></div>
+                    <!-- Ticks -->
+                    <div class="tick" style="left: 10%"><span class="tick-label">-2</span></div>
+                    <div class="tick" style="left: 30%"><span class="tick-label">0</span></div>
+                    <div class="tick" style="left: 50%"><span class="tick-label">2</span></div>
+                    <div class="tick" style="left: 70%"><span class="tick-label">4</span></div>
+                    <div class="tick" style="left: 90%"><span class="tick-label">6</span></div>
+                </div>
+            </div>
+            
+            <div class="pt-8">
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> Write down the \textbf{smallest integer} (whole number) that satisfies the inequality <span class="math-text bg-pink-50 px-2 py-1 rounded text-xl">x > 5</span>.</p>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 2: Drawing 2D Shapes -->
+    <div class="a4-page print-border">
+        <div class="bg-purple-100 p-5 rounded-2xl border-4 border-purple-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-purple-600 mb-1 flex items-center gap-2"><i data-lucide="layout-grid" class="w-8 h-8"></i> Exam 2: Area & Drawing Shapes</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Calculate the area of a trapezium with parallel sides of <span class="math-text">10 cm</span> and <span class="math-text">14 cm</span>, and a height of <span class="math-text">5 cm</span>.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> On the dotted grid below, carefully sketch a <b>rectangle</b> that has a total area of exactly <span class="math-text text-xl">12 cm&sup2;</span>.</p>
+                <p class="text-sm text-gray-500 italic mt-1">(Assume the distance between each dot is 1 cm).</p>
+                <div class="drawing-grid"></div>
+            </div>
+            
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> Write down the base and height of the rectangle you just drew.</p>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 3: Probability Scales -->
+    <div class="a4-page print-border">
+        <div class="bg-indigo-100 p-5 rounded-2xl border-4 border-indigo-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-indigo-600 mb-1 flex items-center gap-2"><i data-lucide="circle-dashed" class="w-8 h-8"></i> Exam 3: Probability Scales</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> A bag contains 3 red counters and 2 blue counters. What is the theoretical probability of picking a red counter? (Write as a fraction).</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div class="pt-6">
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Ayosh flips a fair coin. Mark with an 'X' on the probability scale below the chance of the coin landing on 'Tails'.</p>
+                <div class="number-line mt-10">
+                    <!-- Ticks -->
+                    <div class="tick" style="left: 0%"><span class="tick-label">0 (Impossible)</span></div>
+                    <div class="tick" style="left: 50%"><span class="tick-label">0.5 (Even chance)</span></div>
+                    <div class="tick" style="left: 100%"><span class="tick-label">1 (Certain)</span></div>
+                </div>
+            </div>
+
+            <div class="pt-10">
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> The probability that it will rain tomorrow is <span class="math-text">0.15</span>. What is the probability that it will NOT rain?</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 4: Surface Area & Nets -->
+    <div class="a4-page print-border">
+        <div class="bg-rose-100 p-5 rounded-2xl border-4 border-rose-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-rose-600 mb-1 flex items-center gap-2"><i data-lucide="box" class="w-8 h-8"></i> Exam 4: 3D Shapes & Nets</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Find the <b>Volume</b> of a cuboid with a length of <span class="math-text">5 cm</span>, a width of <span class="math-text">4 cm</span>, and a height of <span class="math-text">10 cm</span>.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Sketch the <b>net</b> of a cube in the blank space below.</p>
+                <p class="text-sm text-gray-500 italic mt-1">Hint: A cube has 6 square faces. You can draw the "cross" shape net!</p>
+                <div class="w-full h-48 border-2 border-dashed border-rose-300 rounded-xl mt-4 bg-white"></div>
+            </div>
+            
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> If one side of a cube is <span class="math-text">3 cm</span>, calculate the area of just <b>one face</b>.</p>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 5: Word Problems & Inequalities -->
+    <div class="a4-page print-border">
+        <div class="bg-cyan-100 p-5 rounded-2xl border-4 border-cyan-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-cyan-600 mb-1 flex items-center gap-2"><i data-lucide="message-circle" class="w-8 h-8"></i> Exam 5: Word Problems</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> I am thinking of a number, <span class="math-text">n</span>. Write an inequality to show: <br><i>"Double the number is at least 20."</i></p>
+                <p class="text-sm text-gray-500 italic mt-1">Hint: "At least" means greater than or equal to.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Solve this inequality: <span class="math-text bg-cyan-50 px-2 py-1 rounded text-xl">3x - 2 < 10</span></p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> Look at the inequality on the number line. Write the correct inequality for <span class="math-text">x</span>.</p>
+                <div class="number-line mt-8 mb-8">
+                    <!-- Ticks -->
+                    <div class="tick" style="left: 10%"><span class="tick-label">-2</span></div>
+                    <div class="tick" style="left: 30%"><span class="tick-label">-1</span></div>
+                    <div class="tick" style="left: 50%"><span class="tick-label">0</span></div>
+                    <div class="tick" style="left: 70%"><span class="tick-label">1</span></div>
+                    <div class="tick" style="left: 90%"><span class="tick-label">2</span></div>
+                    
+                    <!-- Drawing the inequality line: Open circle at 1, pointing left -->
+                    <div class="absolute w-4 h-4 rounded-full border-4 border-red-500 bg-white" style="left: calc(70% - 8px); top: -20px;"></div>
+                    <div class="absolute h-1 bg-red-500" style="left: 0%; right: 30%; top: -14px;"></div>
+                    <div class="absolute w-0 h-0 border-t-[5px] border-t-transparent border-b-[5px] border-b-transparent border-r-[10px] border-r-red-500" style="left: 0%; top: -19px;"></div>
+                </div>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 6: Unknowns on Both Sides -->
+    <div class="a4-page print-border">
+        <div class="bg-emerald-100 p-5 rounded-2xl border-4 border-emerald-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-emerald-600 mb-1 flex items-center gap-2"><i data-lucide="scale" class="w-8 h-8"></i> Exam 6: Balancing Equations</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Convert <span class="math-text">40 kilometres</span> to miles.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Solve the equation with unknowns on both sides: <br><br> <span class="math-text bg-emerald-50 px-2 py-1 rounded text-2xl">5x + 2 = 2x + 17</span></p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 7: Experimental Spinners -->
+    <div class="a4-page print-border">
+        <div class="bg-amber-100 p-5 rounded-2xl border-4 border-amber-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-amber-600 mb-1 flex items-center gap-2"><i data-lucide="aperture" class="w-8 h-8"></i> Exam 7: Spinners & Experiments</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Sophia spins a spinner 50 times in an experiment. It lands on the colour RED 20 times. What is the <b>experimental probability</b> of the spinner landing on RED? (Simplify your fraction).</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Shade the blank circle below to create a spinner where the theoretical probability of landing on a shaded section is exactly <span class="math-text">1/4</span>.</p>
+                <div class="w-40 h-40 border-4 border-amber-400 rounded-full mx-auto mt-6 relative bg-white">
+                    <div class="absolute top-0 bottom-0 left-1/2 w-1 bg-amber-400 -translate-x-1/2"></div>
+                    <div class="absolute left-0 right-0 top-1/2 h-1 bg-amber-400 -translate-y-1/2"></div>
+                </div>
+            </div>
+            
+            <div class="pt-4">
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> The theoretical probability of rolling a '6' on a normal dice is <span class="math-text">1/6</span>. If a dice is rolled 60 times and lands on '6' exactly 30 times, is the dice fair? Explain.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 8: Geometry Equations -->
+    <div class="a4-page print-border">
+        <div class="bg-fuchsia-100 p-5 rounded-2xl border-4 border-fuchsia-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-fuchsia-600 mb-1 flex items-center gap-2"><i data-lucide="triangle-right" class="w-8 h-8"></i> Exam 8: Geometry Equations</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> The three interior angles of a right-angled triangle are <span class="math-text">x&deg;</span>, <span class="math-text">2x&deg;</span>, and <span class="math-text">90&deg;</span>. Construct an equation and solve it to find <span class="math-text">x</span>.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> Draw the inequality <span class="math-text text-xl">x < 4</span> on the blank number line below.</p>
+                <div class="number-line mt-10">
+                    <div class="absolute -right-2 -top-1.5 w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[8px] border-l-slate-600"></div>
+                    <div class="absolute -left-2 -top-1.5 w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-r-[8px] border-r-slate-600"></div>
+                    <!-- Ticks -->
+                    <div class="tick" style="left: 10%"><span class="tick-label">1</span></div>
+                    <div class="tick" style="left: 30%"><span class="tick-label">2</span></div>
+                    <div class="tick" style="left: 50%"><span class="tick-label">3</span></div>
+                    <div class="tick" style="left: 70%"><span class="tick-label">4</span></div>
+                    <div class="tick" style="left: 90%"><span class="tick-label">5</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 9: Mixed Practice -->
+    <div class="a4-page print-border">
+        <div class="bg-teal-100 p-5 rounded-2xl border-4 border-teal-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-teal-600 mb-1 flex items-center gap-2"><i data-lucide="layers" class="w-8 h-8"></i> Exam 9: Mixed Shapes & Prob</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Find the area of a parallelogram with a base of <span class="math-text">8 cm</span> and a perpendicular height of <span class="math-text">5 cm</span>.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> A bag holds counters that are either pink or green. P(pink) = <span class="math-text">0.4</span>. What is P(green)?</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+            
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> On the grid below, sketch any <b>triangle</b> that has an area of exactly <span class="math-text text-xl">8 cm&sup2;</span>.</p>
+                <p class="text-sm text-gray-500 italic mt-1">(Hint: &frac12; &times; base &times; height = 8. So base &times; height must equal 16!).</p>
+                <div class="drawing-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXAM 10: The Ultimate Mega Mix -->
+    <div class="a4-page print-border">
+        <div class="bg-gradient-to-r from-pink-200 to-purple-200 p-5 rounded-2xl border-4 border-purple-300 mb-6 shrink-0">
+            <h2 class="fancy-title text-3xl text-purple-800 mb-1 flex items-center gap-2"><i data-lucide="crown" class="w-8 h-8"></i> Exam 10: The Mega Mix!</h2>
+        </div>
+
+        <div class="space-y-8 flex-grow">
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>1.</b> Solve the equation: <span class="math-text text-xl">4(x - 1) = 2x + 6</span></p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>2.</b> A triangular prism has a cross-section area of <span class="math-text">15 cm&sup2;</span> and a length of <span class="math-text">10 cm</span>. Calculate the volume.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+
+            <div>
+                <p class="text-[1.15rem] font-bold text-purple-900"><b>3.</b> Convert <span class="math-text">25 miles</span> to kilometres.</p>
+                <div class="write-line"></div>
+                <div class="write-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MARK SCHEME (PAGES 11 & 12) -->
+    <div class="a4-page print-border">
+        <div class="text-center mb-6 border-b-4 border-pink-200 pb-4 shrink-0 bg-white p-4 rounded-t-2xl">
+            <h2 class="fancy-title text-4xl text-pink-500 mb-1">Teacher's Answer Key 🎀</h2>
+            <p class="text-purple-600 font-bold text-[1.05rem]">Grade all 10 Exams here!</p>
+        </div>
+
+        <div class="space-y-4 text-sm text-purple-900 flex-grow">
+            <div class="bg-pink-50 p-3 rounded-xl border border-pink-200">
+                <h3 class="font-bold text-pink-700 text-lg mb-1">Exam 1: Equations & Number Lines</h3>
+                <p><b>1:</b> 2x + 6 = 14 &rarr; 2x = 8 &rarr; <b>x = 4</b></p>
+                <p><b>2:</b> Closed circle at 2, arrow pointing to the right (&rarr;).</p>
+                <p><b>3:</b> The smallest integer greater than 5 is <b>6</b>.</p>
+            </div>
+
+            <div class="bg-purple-50 p-3 rounded-xl border border-purple-200">
+                <h3 class="font-bold text-purple-700 text-lg mb-1">Exam 2: Area & Drawing Shapes</h3>
+                <p><b>1:</b> Area = &frac12;(10 + 14) &times; 5 = &frac12;(24) &times; 5 = 12 &times; 5 = <b>60 cm²</b>.</p>
+                <p><b>2 & 3:</b> Any rectangle drawn where length &times; width = 12. Example: Base = 4 cm (4 dots), Height = 3 cm (3 dots). Or 6x2.</p>
+            </div>
+
+            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-200">
+                <h3 class="font-bold text-indigo-700 text-lg mb-1">Exam 3: Probability Scales</h3>
+                <p><b>1:</b> Total counters = 5. P(red) = <b>3/5</b>.</p>
+                <p><b>2:</b> Cross ('X') placed exactly at 0.5 (Even chance) in the middle of the line.</p>
+                <p><b>3:</b> 1.00 - 0.15 = <b>0.85</b></p>
+            </div>
+
+            <div class="bg-rose-50 p-3 rounded-xl border border-rose-200">
+                <h3 class="font-bold text-rose-700 text-lg mb-1">Exam 4: 3D Shapes & Nets</h3>
+                <p><b>1:</b> Volume = 5 &times; 4 &times; 10 = <b>200 cm³</b>.</p>
+                <p><b>2:</b> A net drawn with 6 squares (like a cross or 'T' shape).</p>
+                <p><b>3:</b> Area of a square = 3 &times; 3 = <b>9 cm²</b>.</p>
+            </div>
+
+            <div class="bg-cyan-50 p-3 rounded-xl border border-cyan-200">
+                <h3 class="font-bold text-cyan-700 text-lg mb-1">Exam 5: Word Problems</h3>
+                <p><b>1:</b> 2n &ge; 20</p>
+                <p><b>2:</b> 3x < 10 + 2 &rarr; 3x < 12 &rarr; <b>x < 4</b>.</p>
+                <p><b>3:</b> The circle is open at 1, pointing left, so the inequality is <b>x < 1</b>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MARK SCHEME CONTINUED -->
+    <div class="a4-page print-border">
+        <div class="space-y-4 text-sm text-purple-900 flex-grow mt-4">
+            <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                <h3 class="font-bold text-emerald-700 text-lg mb-1">Exam 6: Balancing Equations</h3>
+                <p><b>1:</b> 40 &divide; 8 = 5. 5 &times; 5 = <b>25 miles</b>.</p>
+                <p><b>2:</b> 5x - 2x = 17 - 2 &rarr; 3x = 15 &rarr; <b>x = 5</b>.</p>
+            </div>
+
+            <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                <h3 class="font-bold text-amber-700 text-lg mb-1">Exam 7: Spinners & Experiments</h3>
+                <p><b>1:</b> 20 successes / 50 total. Fraction is 20/50, which simplifies to <b>2/5</b>.</p>
+                <p><b>2:</b> Exactly 1 out of the 4 sections in the circle should be shaded.</p>
+                <p><b>3:</b> <b>Not fair.</b> The experimental probability is 30/60 (1/2), which is way higher than the theoretical probability (1/6).</p>
+            </div>
+
+            <div class="bg-fuchsia-50 p-3 rounded-xl border border-fuchsia-200">
+                <h3 class="font-bold text-fuchsia-700 text-lg mb-1">Exam 8: Geometry Equations</h3>
+                <p><b>1:</b> x + 2x + 90 = 180 &rarr; 3x + 90 = 180 &rarr; 3x = 90 &rarr; <b>x = 30</b>.</p>
+                <p><b>2:</b> Open circle at 4, arrow pointing to the left (&larr;).</p>
+            </div>
+
+            <div class="bg-teal-50 p-3 rounded-xl border border-teal-200">
+                <h3 class="font-bold text-teal-700 text-lg mb-1">Exam 9: Mixed Shapes & Prob</h3>
+                <p><b>1:</b> Area = base &times; height = 8 &times; 5 = <b>40 cm²</b>.</p>
+                <p><b>2:</b> 1.0 - 0.4 = <b>0.6</b>.</p>
+                <p><b>3:</b> Any triangle where base &times; height = 16. Example: Base = 4 cm (4 dots), Height = 4 cm (4 dots).</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-pink-100 to-purple-100 p-3 rounded-xl border border-purple-300">
+                <h3 class="font-bold text-purple-800 text-lg mb-1">Exam 10: The Mega Mix!</h3>
+                <p><b>1:</b> 4x - 4 = 2x + 6 &rarr; 2x = 10 &rarr; <b>x = 5</b>.</p>
+                <p><b>2:</b> Volume = 15 &times; 10 = <b>150 cm³</b>.</p>
+                <p><b>3:</b> 25 &divide; 5 = 5. 5 &times; 8 = <b>40 km</b>.</p>
+            </div>
+            
+            <div class="mt-8 text-center pb-4">
+                <div class="text-5xl mb-2">🎓✨👑</div>
+                <p class="font-black text-pink-500 text-2xl">You are a Math Queen, Ayosh!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        function triggerPrint() {
+            if (window.self !== window.top) {
+                document.getElementById('print-modal').classList.remove('hidden');
+            } else {
+                window.print();
+            }
+        }
+    </script>
+</body>
+</html>

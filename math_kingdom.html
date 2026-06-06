@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Kingdom 🧮🎀</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .hub-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); }
+        .hub-card:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 25px 30px -5px rgba(99, 102, 241, 0.25); }
+        .hub-card:hover .icon-container { animation: float 1.5s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 min-h-screen text-purple-900 overflow-x-hidden">
+
+    <div class="relative z-10 max-w-5xl mx-auto px-6 py-12">
+        
+        <div class="mb-10 text-center">
+            <a href="index.html" class="inline-flex items-center gap-2 bg-white px-6 py-2 rounded-full font-bold text-indigo-500 border-2 border-indigo-200 hover:bg-indigo-50 transition-colors mb-6 shadow-sm">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Main Hub
+            </a>
+            <div class="flex justify-center mb-4 animate-float">
+                <div class="bg-gradient-to-r from-indigo-400 to-purple-400 text-white font-black text-4xl md:text-5xl py-6 px-12 rounded-[2.5rem] shadow-xl flex items-center gap-4 border-4 border-white">
+                    <i data-lucide="calculator" class="w-12 h-12"></i> Math Kingdom 🧮
+                </div>
+            </div>
+            <p class="text-xl text-purple-700 font-bold bg-white/60 py-2 px-6 rounded-full inline-block shadow-sm">Welcome Princess Ayosh! Choose your math quest. ✨</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <!-- Magical Math Game -->
+            <a href="math_game.html" class="hub-card block p-8 rounded-[2rem] border-4 border-indigo-200 cursor-pointer group text-center hover:border-indigo-400">
+                <div class="icon-container w-20 h-20 mx-auto bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-indigo-100 transition-colors">
+                    <i data-lucide="sigma" class="w-10 h-10 text-indigo-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-purple-800 mb-2 group-hover:text-indigo-500 transition-colors">Magical Math</h3>
+                <p class="text-purple-600 font-semibold">IGCSE Core Math • Interactive Quiz</p>
+            </a>
+
+            <!-- Probability Game -->
+            <a href="probability_game.html" class="hub-card block p-8 rounded-[2rem] border-4 border-fuchsia-200 cursor-pointer group text-center hover:border-fuchsia-400">
+                <div class="icon-container w-20 h-20 mx-auto bg-fuchsia-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-fuchsia-100 transition-colors">
+                    <i data-lucide="dice-5" class="w-10 h-10 text-fuchsia-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-purple-800 mb-2 group-hover:text-fuchsia-500 transition-colors">Probability Game</h3>
+                <p class="text-purple-600 font-semibold">Ch 12 • Interactive Quiz</p>
+            </a>
+            
+            <!-- Equations Masterclass -->
+            <a href="ayosh_equations_masterclass.html" class="hub-card block p-8 rounded-[2rem] border-4 border-pink-200 cursor-pointer group text-center hover:border-pink-400">
+                <div class="icon-container w-20 h-20 mx-auto bg-pink-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-pink-100 transition-colors">
+                    <i data-lucide="move-horizontal" class="w-10 h-10 text-pink-500"></i>
+                </div>
+                <h3 class="text-2xl font-black text-purple-800 mb-2 group-hover:text-pink-500 transition-colors">Equations Masterclass</h3>
+                <p class="text-purple-600 font-semibold">Learn & Practice Equations!</p>
+            </a>
+
+            <!-- Math Exam Booklets PDF -->
+            <a href="math_final_exams_booklet.html" class="hub-card block p-8 rounded-[2rem] border-4 border-purple-200 cursor-pointer group text-center hover:border-purple-400 lg:col-span-3 max-w-2xl mx-auto w-full">
+                <div class="flex items-center justify-center gap-6">
+                    <div class="icon-container w-20 h-20 bg-purple-50 rounded-2xl flex items-center justify-center shrink-0 shadow-inner group-hover:bg-purple-100 transition-colors">
+                        <i data-lucide="printer" class="w-10 h-10 text-purple-500"></i>
+                    </div>
+                    <div class="text-left">
+                        <h3 class="text-2xl font-black text-purple-800 mb-1 group-hover:text-purple-500 transition-colors">Math Exam Booklets</h3>
+                        <p class="text-purple-600 font-semibold">Open and Print your 10-Model Math Exams!</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- MATH EXAM PREP (UNLOCKED & MOTIVATED) -->
+            <a href="math_exam_prep.html" class="hub-card block p-8 rounded-[2rem] border-4 border-yellow-400 bg-gradient-to-br from-yellow-50 to-amber-100 cursor-pointer group text-center lg:col-span-3 max-w-2xl mx-auto w-full mt-4 shadow-lg hover:shadow-2xl transition-all relative overflow-hidden">
+                <div class="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-colors"></div>
+                <div class="relative z-10">
+                    <div class="w-20 h-20 mx-auto bg-white rounded-2xl flex items-center justify-center mb-4 shadow-md border-2 border-yellow-200 group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="flame" class="w-10 h-10 text-orange-500"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-orange-600 mb-2">Math Exam Prep! 🔥</h3>
+                    <p class="text-orange-800 font-bold mb-4 text-lg">Final Revisions & Past Papers</p>
+                    <span class="bg-gradient-to-r from-orange-400 to-red-500 text-white px-6 py-2 rounded-full text-sm font-black tracking-widest shadow-md uppercase animate-pulse inline-block">Crush it before 7 AM! ⏰💯</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
