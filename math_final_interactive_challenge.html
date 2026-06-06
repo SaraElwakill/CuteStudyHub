@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayosh's Epic Math Adventure 👑✨</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+
+        .fancy-title { font-family: 'Fredoka One', cursive; letter-spacing: 1px; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
+
+        /* Animations */
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+        @keyframes pop-in { 0% { transform: scale(0.5) translateY(30px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+        @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-pop-in { animation: pop-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
+
+        .math-text { font-family: 'Courier New', Courier, monospace; font-weight: 900; background: rgba(255,255,255,0.5); padding: 2px 8px; border-radius: 8px; }
+        
+        /* Options container to blur out before reveal */
+        .hidden-options { filter: blur(12px) grayscale(50%); pointer-events: none; opacity: 0.4; transition: all 0.8s; }
+        .revealed-options { filter: blur(0) grayscale(0%); pointer-events: auto; opacity: 1; transition: all 0.8s; }
+    </style>
+</head>
+<body id="main-body" class="bg-gradient-to-br from-pink-100 to-purple-200 min-h-screen pb-20 flex justify-center items-center p-4">
+
+    <!-- App Container -->
+    <div id="app-container" class="max-w-3xl w-full bg-white/90 backdrop-blur-xl rounded-[3rem] shadow-2xl border-8 border-white/50 overflow-hidden relative min-h-[700px] flex flex-col transition-all duration-500">
+        <div id="top-bar" class="h-6 w-full shrink-0 transition-colors duration-500"></div>
+        <div id="root" class="flex-grow p-6 md:p-10 flex flex-col relative h-full"></div>
+    </div>
+
+    <script>
+        // --- AUDIO SYSTEM ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
+            if (type === 'pop') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'correct') {
+                const notes = [523.25, 659.25, 783.99, 1046.50]; 
+                notes.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination); o.type = 'sine'; o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.1, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                        o.start(); o.stop(audioCtx.currentTime + 0.4);
+                    }, i * 120);
+                });
+            } else if (type === 'incorrect') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        // --- 5 UNIQUE MINI-BOSS MODELS ---
+        const quizData = [
+            {
+                topic: "Equations",
+                bossName: "The Mind-Reading Wizard",
+                bossEmoji: "🧙‍♂️",
+                theme: { bg: "from-purple-100 to-fuchsia-200", bar: "bg-fuchsia-400", text: "text-fuchsia-800", border: "border-fuchsia-300" },
+                q: "Omid says: 'I think of a number. I multiply it by 3. Then I add 5. I get -13.' What is the secret number?",
+                timerTexts: ["Reading Omid's mind... 🧠", "Multiplying by 3 in my head... 🤯", "Wait, negative 13?! 🥶", "Take all the time you need!", "No rush, paper is your friend! 📝"],
+                steps: [
+                    "Step 1: Write it as an equation: 3x + 5 = -13",
+                    "Step 2: Move the +5 to the other side: 3x = -13 - 5",
+                    "Step 3: 3x = -18",
+                    "Step 4: Divide both sides by 3!"
+                ],
+                opts: [
+                    { t: "-6", c: true },
+                    { t: "6", c: false },
+                    { t: "-8", c: false }
+                ],
+                trickMsg: "Careful with negative numbers! -13 minus 5 goes further down to -18!"
+            },
+            {
+                topic: "Area",
+                bossName: "The Shape Shifter",
+                bossEmoji: "📐",
+                theme: { bg: "from-emerald-100 to-teal-200", bar: "bg-teal-400", text: "text-teal-900", border: "border-teal-300" },
+                q: "Find the area of a Trapezium with parallel sides 14 mm and 8 mm, and a height of 6 mm.",
+                timerTexts: ["Looking for a ruler... 📏", "Adding 14 and 8... using fingers 🖐️", "Multiplying by 6... 💦", "Don't forget to cut it in half! ✂️", "Take your time, shapes are tricky!"],
+                steps: [
+                    "Step 1: Formula is Area = &frac12;(a + b)h",
+                    "Step 2: Add the parallel sides first: 14 + 8 = 22",
+                    "Step 3: Multiply by the height: 22 &times; 6 = 132",
+                    "Step 4: Finally, divide by 2!"
+                ],
+                opts: [
+                    { t: "132 square millimetres", c: false },
+                    { t: "66 square millimetres", c: true },
+                    { t: "44 square millimetres", c: false }
+                ],
+                trickMsg: "Tricky! If you chose 132, you forgot to divide by 2 at the very end!"
+            },
+            {
+                topic: "Probability",
+                bossName: "The Sweet Monster",
+                bossEmoji: "🍭",
+                theme: { bg: "from-rose-100 to-pink-200", bar: "bg-rose-400", text: "text-rose-900", border: "border-rose-300" },
+                q: "A bag has 3 Pink, 2 Blue, and 5 Yellow sweets. What is the probability of picking a Pink sweet?",
+                timerTexts: ["Shaking the bag... 🍬", "Trying not to eat the pink ones... 😋", "Counting total sweets... 1, 2, 3...", "No timer here, just sweet math!", "Whenever you are ready! ✨"],
+                steps: [
+                    "Step 1: Count the favourable outcomes. There are 3 pink sweets.",
+                    "Step 2: Count the TOTAL possible outcomes. 3 + 2 + 5 = 10 sweets in total.",
+                    "Step 3: Put the pink over the total: 3 / 10."
+                ],
+                opts: [
+                    { t: "3 out of 10", c: true },
+                    { t: "3 out of 5", c: false },
+                    { t: "5 out of 10", c: false }
+                ],
+                trickMsg: "You have to count ALL the sweets in the bag to find the total, not just the yellow ones!"
+            },
+            {
+                topic: "Volume",
+                bossName: "The Ice Cuboid",
+                bossEmoji: "🧊",
+                theme: { bg: "from-blue-100 to-cyan-200", bar: "bg-blue-400", text: "text-blue-900", border: "border-blue-300" },
+                q: "A triangular prism has a front triangle area of 30 cm&sup2; and a length of 5 cm. What is its volume?",
+                timerTexts: ["Building a 3D prism... 🧱", "Finding the front area... 🧐", "Stretching it backwards by 5cm... 🚀", "It's getting huge! Take your time!", "Just one simple multiplication..."],
+                steps: [
+                    "Step 1: The magical volume rule is: Area of cross-section &times; length.",
+                    "Step 2: We already know the front area! It is 30.",
+                    "Step 3: Multiply 30 &times; 5 to get the volume."
+                ],
+                opts: [
+                    { t: "75 cubic centimetres", c: false },
+                    { t: "150 cubic centimetres", c: true },
+                    { t: "35 cubic centimetres", c: false }
+                ],
+                trickMsg: "Wait! The area was ALREADY calculated for you! You didn't need to divide by 2 again!"
+            },
+            {
+                topic: "Length Conversion",
+                bossName: "The Speedy Racer",
+                bossEmoji: "🏎️",
+                theme: { bg: "from-amber-100 to-yellow-200", bar: "bg-amber-400", text: "text-amber-900", border: "border-amber-300" },
+                q: "Convert 72 kilometres into miles! (Rule: 5 miles &approx; 8 km)",
+                timerTexts: ["Packing bags for a 72km trip... 🎒", "Wait, divide by 8 first! 🧮", "Now multiply by 5... 🏃‍♀️", "Are we there yet?!", "No rush, it's a long journey! 🗺️"],
+                steps: [
+                    "Step 1: When going from km to miles, the rule is &divide; 8, then &times; 5.",
+                    "Step 2: 72 &divide; 8 = 9",
+                    "Step 3: Now multiply 9 &times; 5."
+                ],
+                opts: [
+                    { t: "115 miles", c: false },
+                    { t: "45 miles", c: true },
+                    { t: "40 miles", c: false }
+                ],
+                trickMsg: "If you got a huge number, you probably multiplied by 8 instead of dividing!"
+            }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        let timerInterval;
+
+        const root = document.getElementById('root');
+
+        // --- VIEWS ---
+        function renderPrepScreen() {
+            document.getElementById('main-body').className = 'bg-gradient-to-br from-pink-100 to-purple-200 min-h-screen pb-20 flex justify-center items-center p-4 transition-all duration-1000';
+            document.getElementById('top-bar').className = 'h-6 w-full shrink-0 bg-gradient-to-r from-pink-400 to-purple-400';
+            
+            root.innerHTML = `
+                <div class="text-center space-y-6 flex flex-col items-center animate-pop-in h-full justify-center pb-10">
+                    <div class="w-32 h-32 bg-white rounded-[2rem] flex items-center justify-center animate-float shadow-xl border-4 border-pink-300">
+                        <span class="text-6xl">🎨</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+                        The 5 Mini-Bosses! 👑
+                    </h1>
+                    <div class="bg-white/80 p-8 rounded-3xl border-4 border-white shadow-lg max-w-xl text-left space-y-5">
+                        <p class="text-2xl text-purple-900 font-black text-center mb-6">Game Rules:</p>
+                        <div class="flex items-center gap-4 bg-purple-50 p-4 rounded-2xl">
+                            <div class="text-3xl bg-white p-2 rounded-xl shadow-sm">📝</div>
+                            <p class="text-lg font-bold text-purple-800">Grab your paper and pen right now! You need it!</p>
+                        </div>
+                        <div class="flex items-center gap-4 bg-pink-50 p-4 rounded-2xl">
+                            <div class="text-3xl bg-white p-2 rounded-xl shadow-sm">🙈</div>
+                            <p class="text-lg font-bold text-pink-800">Answers are HIDDEN. Solve it on paper first!</p>
+                        </div>
+                        <div class="flex items-center gap-4 bg-indigo-50 p-4 rounded-2xl">
+                            <div class="text-3xl bg-white p-2 rounded-xl shadow-sm">⏳</div>
+                            <p class="text-lg font-bold text-indigo-800">The timer is just for fun! Take all the time you need.</p>
+                        </div>
+                    </div>
+                    <button onclick="startChallenge()" class="w-full max-w-md py-5 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-3xl font-black text-2xl shadow-xl transform transition hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 border-4 border-purple-400 mt-4">
+                        I Have My Paper! Let's Go! 🚀
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.startChallenge = function() {
+            initAudio(); playSound('pop');
+            currentQIndex = 0; score = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            clearInterval(timerInterval);
+            const q = quizData[currentQIndex];
+            
+            // Apply Dynamic Theme!
+            document.getElementById('main-body').className = `bg-gradient-to-br ${q.theme.bg} min-h-screen pb-20 flex justify-center items-center p-4 transition-all duration-1000`;
+            document.getElementById('top-bar').className = `h-6 w-full shrink-0 ${q.theme.bar} transition-colors duration-1000`;
+
+            let progressHtml = `
+                <div class="flex justify-between items-center border-b-4 ${q.theme.border} pb-4 shrink-0 opacity-80">
+                    <div class="flex items-center gap-2 font-black text-xl ${q.theme.text}">
+                        Boss ${currentQIndex + 1} / 5
+                    </div>
+                    <div class="w-1/2 bg-white/50 rounded-full h-3 mx-4">
+                        <div class="${q.theme.bar} h-3 rounded-full transition-all duration-500 shadow-sm" style="width: ${((currentQIndex) / quizData.length) * 100}%"></div>
+                    </div>
+                    <span class="font-black ${q.theme.text} bg-white/50 px-4 py-1 rounded-full text-lg shadow-sm">Score: ${score}</span>
+                </div>
+            `;
+
+            let optionsHtml = q.opts.map((opt, idx) => `
+                <button id="opt-${idx}" onclick="handleAnswer(${idx}, ${opt.c})" class="w-full text-left p-6 rounded-3xl border-4 border-white bg-white/80 font-black ${q.theme.text} hover:bg-white shadow-lg text-xl transform transition hover:-translate-y-1 active:scale-95">
+                    ${opt.t}
+                </button>
+            `).join('');
+
+            root.innerHTML = `
+                <div class="space-y-6 w-full animate-pop-in flex flex-col h-full">
+                    ${progressHtml}
+                    
+                    <div class="bg-white/80 backdrop-blur-sm p-8 rounded-[2.5rem] border-4 border-white shrink-0 shadow-xl relative text-center mt-4">
+                        <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 text-7xl animate-float drop-shadow-xl">
+                            ${q.bossEmoji}
+                        </div>
+                        <span class="inline-block mt-8 mb-4 ${q.theme.bar} text-white px-5 py-2 rounded-full font-black text-sm tracking-widest uppercase shadow-md">${q.bossName}</span>
+                        <h2 class="text-2xl md:text-3xl font-black ${q.theme.text} leading-relaxed">${q.q}</h2>
+                        
+                        <!-- Relaxing Funny Timer -->
+                        <div class="mt-8 bg-white/60 p-4 rounded-2xl flex justify-center items-center gap-3">
+                            <span class="text-2xl animate-bounce-gentle">💭</span>
+                            <p id="timer-text" class="font-bold text-xl ${q.theme.text} italic transition-opacity duration-300">Taking a deep breath...</p>
+                        </div>
+                    </div>
+
+                    <div id="controls-area" class="flex flex-col gap-4 shrink-0 mt-2">
+                        <button id="btn-show-steps" onclick="revealSteps()" class="w-full py-4 bg-white/60 ${q.theme.text} border-4 border-white hover:bg-white rounded-3xl font-black text-xl shadow-md transition">
+                            I'm stuck! Show me the Magic Steps 📖
+                        </button>
+                        <button id="btn-reveal-opts" onclick="revealOptions()" class="w-full py-5 ${q.theme.bar} text-white rounded-3xl font-black text-2xl shadow-xl transition hover:-translate-y-1">
+                            I wrote my answer! Reveal Choices! 🕵️‍♀️
+                        </button>
+                    </div>
+
+                    <div id="steps-container" class="hidden bg-white/90 border-4 border-white rounded-3xl p-6 space-y-4 shrink-0 shadow-lg">
+                        <h4 class="font-black ${q.theme.text} uppercase tracking-wider mb-2 border-b-2 ${q.theme.border} pb-2 text-xl">The Magic Strategy</h4>
+                        ${q.steps.map(step => `<p class="font-bold text-xl text-gray-700">${step}</p>`).join('')}
+                    </div>
+                    
+                    <div class="space-y-4 flex-grow overflow-y-auto custom-scrollbar hidden-options" id="options-container">
+                        ${optionsHtml}
+                    </div>
+                    
+                    <div id="feedback-container" class="hidden mt-4 shrink-0"></div>
+                </div>
+            `;
+            lucide.createIcons();
+
+            // Run Relaxing Funny Timer
+            let ticks = 0;
+            timerInterval = setInterval(() => {
+                ticks++;
+                const textEl = document.getElementById('timer-text');
+                if (textEl) {
+                    textEl.style.opacity = 0; // Fade out
+                    setTimeout(() => {
+                        textEl.innerText = q.timerTexts[ticks % q.timerTexts.length];
+                        textEl.style.opacity = 1; // Fade in
+                    }, 300);
+                }
+            }, 3500); // Slower, more relaxing interval
+        }
+
+        window.revealSteps = function() {
+            playSound('pop');
+            document.getElementById('btn-show-steps').classList.add('hidden');
+            const steps = document.getElementById('steps-container');
+            steps.classList.remove('hidden');
+            steps.classList.add('animate-pop-in');
+        }
+
+        window.revealOptions = function() {
+            playSound('pop');
+            document.getElementById('controls-area').classList.add('hidden');
+            const opts = document.getElementById('options-container');
+            opts.classList.remove('hidden-options');
+            opts.classList.add('revealed-options');
+        }
+
+        window.handleAnswer = function(idx, isCorrect) {
+            clearInterval(timerInterval);
+            const q = quizData[currentQIndex];
+            const feedbackContainer = document.getElementById('feedback-container');
+            const clickedBtn = document.getElementById(`opt-${idx}`);
+
+            document.querySelectorAll('#options-container button').forEach(btn => {
+                btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+
+            document.getElementById('steps-container').classList.add('hidden');
+
+            if (isCorrect) {
+                score++; playSound('correct');
+                clickedBtn.className = "w-full text-left p-6 rounded-3xl border-4 font-black bg-green-100 border-green-500 text-green-900 scale-[1.02] shadow-xl transition-all text-xl";
+                
+                feedbackContainer.innerHTML = `
+                    <div class="p-8 rounded-3xl border-4 bg-white border-green-400 animate-pop-in shadow-xl text-center relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-8xl opacity-20">⭐</div>
+                        <p class="font-black text-4xl text-green-500 mb-2">FLAWLESS! 🎉</p>
+                        <p class="text-xl font-bold text-gray-700">You defeated ${q.bossName}!</p>
+                        <button onclick="nextQuestion()" class="mt-6 w-full py-5 bg-green-500 text-white rounded-2xl font-black text-2xl shadow-lg hover:bg-green-600 transition hover:-translate-y-1">Next Boss &rarr;</button>
+                    </div>
+                `;
+            } else {
+                playSound('incorrect');
+                clickedBtn.className = "w-full text-left p-6 rounded-3xl border-4 font-black bg-red-100 border-red-500 text-red-900 scale-[0.98] transition-all text-xl";
+                
+                const correctIdx = q.opts.findIndex(o => o.c);
+                const correctBtn = document.getElementById(`opt-${correctIdx}`);
+                correctBtn.classList.remove('opacity-50', 'bg-white/80'); correctBtn.classList.add('bg-green-100', 'border-green-400', 'text-green-900');
+
+                feedbackContainer.innerHTML = `
+                    <div class="p-8 rounded-3xl border-4 bg-white border-rose-400 animate-pop-in shadow-xl text-center">
+                        <p class="font-black text-3xl text-rose-600 mb-3">Oh no! A tricky trap! 🙈</p>
+                        <p class="text-xl font-bold text-gray-700 bg-rose-50 p-4 rounded-2xl border-2 border-rose-100">${q.trickMsg}</p>
+                        <button onclick="nextQuestion()" class="mt-6 w-full py-5 bg-rose-500 text-white rounded-2xl font-black text-2xl shadow-lg hover:bg-rose-600 transition hover:-translate-y-1">I got it! Next &rarr;</button>
+                    </div>
+                `;
+            }
+
+            feedbackContainer.classList.remove('hidden'); lucide.createIcons();
+        }
+
+        window.nextQuestion = function() {
+            playSound('pop');
+            if (currentQIndex < quizData.length - 1) { 
+                currentQIndex++; renderQuestion(); 
+            } else { 
+                renderReport(); 
+            }
+        }
+
+        function renderReport() {
+            document.getElementById('main-body').className = 'bg-gradient-to-br from-amber-100 to-orange-200 min-h-screen pb-20 flex justify-center items-center p-4 transition-all duration-1000';
+            document.getElementById('top-bar').className = 'h-6 w-full shrink-0 bg-gradient-to-r from-amber-400 to-orange-400';
+
+            let message = score === quizData.length ? "PERFECT SCORE! You are absolutely ready! 👑✨" : "Amazing effort! You learned the tricks, now go ace the real thing! 💪";
+            
+            root.innerHTML = `
+                <div class="flex flex-col h-full w-full animate-pop-in justify-center">
+                    <div class="text-center mb-8 shrink-0">
+                        <div class="w-40 h-40 mx-auto bg-white rounded-full flex items-center justify-center mb-6 border-8 border-amber-200 shadow-2xl animate-float">
+                            <i data-lucide="trophy" class="w-20 h-20 text-amber-500"></i>
+                        </div>
+                        <h3 class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600 mb-4 drop-shadow-sm">Victory!</h3>
+                    </div>
+
+                    <div class="bg-white/80 backdrop-blur-sm w-full p-10 rounded-[3rem] border-4 border-white text-center mb-8 shadow-xl">
+                        <p class="text-xl text-amber-800 font-black uppercase tracking-widest mb-2">Final Boss Score</p>
+                        <p class="text-8xl font-black text-amber-500 my-6 drop-shadow-md">${score} <span class="text-4xl text-amber-300">/ 5</span></p>
+                        <p class="text-2xl text-amber-900 font-bold leading-relaxed">${message}</p>
+                    </div>
+                    
+                    <div class="shrink-0 flex gap-4">
+                        <button onclick="startChallenge()" class="flex-1 py-6 bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 rounded-[2rem] font-black text-3xl shadow-2xl transform transition hover:-translate-y-2 active:scale-95 flex items-center justify-center gap-3 border-4 border-white/50">
+                            <i data-lucide="refresh-ccw" class="w-8 h-8"></i> Play Again!
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Init
+        renderPrepScreen();
+    </script>
+</body>
+</html>
